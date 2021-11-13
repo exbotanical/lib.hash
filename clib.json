@@ -1,0 +1,14 @@
+{
+  "name": "hashed",
+  "version": "0.0.1",
+  "author": "Matthew Zito (goldmund)",
+  "repo": "MatthewZito/hashed",
+  "license": "MIT",
+  "description": "",
+  "keywords": [
+
+  ],
+  "src": [
+    "src/hashed.h"
+  ]
+}
