@@ -143,7 +143,7 @@ void h_insert (h_table* ht, const char* key, const char* value) {
   h_record* current_record = ht->records[idx];
 
 	// i.e. if there was a collision
-  while (current_record != NULL) {
+  while (current_record != NULL && current_record != &H_RECORD_SENTINEL) {
 		// update existing key/value
 		if (strcmp(current_record->key, key) == 0) {
       h_delete_record(current_record);
@@ -168,7 +168,7 @@ void h_insert (h_table* ht, const char* key, const char* value) {
  * @param key
  * @return char*
  */
-char* h_search (h_table* ht, const char* key) {
+h_record* h_search (h_table* ht, const char* key) {
   int i = 0;
   int idx = h_resolve_hash(key, ht->capacity, i);
 
@@ -176,7 +176,7 @@ char* h_search (h_table* ht, const char* key) {
 
   while (current_record != NULL && current_record != &H_RECORD_SENTINEL) {
 		if (strcmp(current_record->key, key) == 0) {
-			return current_record->value;
+			return current_record;
 		}
 
     idx = h_resolve_hash(key, ht->capacity, ++i);
@@ -186,7 +186,13 @@ char* h_search (h_table* ht, const char* key) {
 	return NULL;
 }
 
-/**
+char* h_retrieve (h_table* ht, const char* key) {
+	h_record* r = h_search(ht, key);
+
+	return r ? r->value : NULL;
+}
+
+/**c
  * @brief Delete a record for the given key `key`. Because records
  * may be part of a collision chain, and removing them completely
  * could cause infinite lookup attempts, we replace the deleted record
