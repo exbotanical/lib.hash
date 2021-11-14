@@ -1,4 +1,36 @@
 #ifndef HASHED_H
 #define HASHED_H
 
+/**
+ * A hash table record i.e. key / value pair
+ */
+typedef struct {
+	char* key;
+	char* value;
+} h_record;
+
+/**
+ * A hash table
+ */
+typedef struct {
+	/**
+	 * Max number of records which may be stored in the hash table
+	 */
+	int capacity;
+
+	/**
+	 * Number of non-NULL records in the hash table
+	 */
+	int count;
+
+	/**
+	 * The hash table's records
+	 */
+	h_record** records;
+} h_table;
+
+h_table* h_init_table (int max_capacity);
+
+void h_delete_table (h_table* ht);
+
 #endif /* HASHED_H */
