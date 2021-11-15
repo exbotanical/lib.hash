@@ -1,15 +1,18 @@
 {
-  "name": "hashed",
+  "name": "lib.hashed",
   "version": "0.0.1",
   "author": "Matthew Zito (goldmund)",
-  "repo": "MatthewZito/hashed",
+  "repo": "MatthewZito/lib.hashed",
   "license": "MIT",
   "description": "",
   "keywords": [
 
   ],
   "src": [
-    "src/hashed.h"
+    "src/hashed.h",
+    "src/hashed.c",
+    "src/prime.h",
+    "src/prime.c"
   ],
 	"development": {
     "thlorenz/tap.c": "*"

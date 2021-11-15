@@ -1,4 +1,4 @@
 *.so
 *.o
-hashed
+lib.hashed
 main

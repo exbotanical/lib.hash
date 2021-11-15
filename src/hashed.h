@@ -14,9 +14,15 @@ typedef struct {
  */
 typedef struct {
 	/**
-	 * Max number of records which may be stored in the hash table
+	 * Max number of records which may be stored in the hash table. Adjustable.
+	 * Calculated as the first prime subsequent to the base capacity.
 	 */
 	int capacity;
+
+	/**
+	 * Base capacity (used to calculate load for resizing)
+	 */
+	int base_capacity;
 
 	/**
 	 * Number of non-NULL records in the hash table

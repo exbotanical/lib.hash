@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "prime.h"
 #include "hashed.h"
 
 static h_record H_RECORD_SENTINEL = {
@@ -9,6 +10,7 @@ static h_record H_RECORD_SENTINEL = {
 	NULL
 };
 
+static const int H_DEFAULT_CAPACITY = 50;
 static const int H_PRIME_1 = 151;
 static const int H_PRIME_2 = 163;
 
@@ -30,8 +32,9 @@ static int h_hash (const char* key, const int prime, const int capacity) {
 		// convert the key to a large integer
 		hash += (long)pow(prime, len_s - (i+1)) * key[i];
 		// reduce said large integer to a fixed range
-		hash = hash % capacity;
 	}
+
+	hash = hash % capacity;
 
 	return (int)hash;
 }
@@ -57,6 +60,71 @@ static int h_resolve_hash (
 	const int hash_b = h_hash(key, H_PRIME_2, capacity);
 
 	return (hash_a + (attempt * (hash_b + 1))) % capacity;
+}
+
+/**
+ * @brief Resize the hash table. This implementation has a set capacity;
+ * hash collisions rise beyond the capacity and `h_instert` will fail.
+ * To mitigate this, we resize up if the load (measured as the ratio of records count to capacity)
+ * is less than .1, or down if the load exceeds .7. To resize, we create a new table approx. 1/2x or 2x times the
+ * current table size, then insert into it all non-deleted records.
+ *
+ * @param ht
+ * @param base_capacity
+ * @return int
+ */
+static void h_resize (h_table* ht, const int base_capacity) {
+	if (base_capacity < 0) {
+		return;
+	}
+
+	h_table* new_ht = h_init_table(base_capacity);
+
+	for (int i = 0; i < ht->capacity; i++) {
+		h_record* r = ht->records[i];
+
+		if (r != NULL && r != &H_RECORD_SENTINEL) {
+			h_insert(new_ht, r->key, r->value);
+		}
+	}
+
+	ht->base_capacity = new_ht->base_capacity;
+	ht->count = new_ht->count;
+
+	const int tmp_capacity = ht->capacity;
+
+	ht->capacity = new_ht->capacity;
+	new_ht->capacity = tmp_capacity;
+
+	h_record** tmp_records = ht->records;
+	ht->records = new_ht->records;
+	new_ht->records = tmp_records;
+
+	h_delete_table(new_ht);
+}
+
+/**
+ * @brief Resize the table to a larger size, the first prime subsequent
+ * to approx. 2x the base capacity.
+ *
+ * @param ht
+ */
+static void h_resize_up (h_table* ht) {
+  const int new_capacity = ht->base_capacity * 2;
+
+  h_resize(ht, new_capacity);
+}
+
+/**
+ * @brief Resize the table to a smaller size, the first prime subsequent
+ * to approx. 1/2x the base capacity.
+ *
+ * @param ht
+ */
+static void h_resize_down (h_table* ht) {
+  const int new_capacity = ht->base_capacity / 2;
+
+  h_resize(ht, new_capacity);
 }
 
 /**
@@ -86,45 +154,24 @@ static void h_delete_record (h_record* r) {
 }
 
 /**
- * Public API
- */
-
-/**
  * @brief Initialize a new hash table with a size of `max_size`
  *
  * @param max_size The hash table capacity
  * @return h_table*
  */
-h_table* h_init_table (int max_capacity) {
-	if (!max_capacity || max_capacity < 1) {
-		max_capacity = 50;
+h_table* h_init_table (int base_capacity) {
+	if (!base_capacity) {
+		base_capacity = H_DEFAULT_CAPACITY;
 	}
 
 	h_table* ht = malloc(sizeof(h_table));
+	ht->base_capacity = base_capacity;
 
-	ht->capacity = max_capacity;
+	ht->capacity = next_prime(ht->base_capacity);
 	ht->count = 0;
 	ht->records = calloc((size_t)ht->capacity, sizeof(h_record*));
 
 	return ht;
-}
-
-/**
- * @brief Delete a hash table and deallocate its memory
- *
- * @param ht Hash table to delete
- */
-void h_delete_table (h_table* ht) {
-	for (int i = 0; i < ht->capacity; i++) {
-		h_record* r = ht->records[i];
-
-		if (r != NULL) {
-			h_delete_record(r);
-		}
-	}
-
-	free(ht->records);
-	free(ht);
 }
 
 /**
@@ -135,6 +182,12 @@ void h_delete_table (h_table* ht) {
  * @param value
  */
 void h_insert (h_table* ht, const char* key, const char* value) {
+	const int load = ht->count * 100 / ht->capacity;
+
+  if (load > 70) {
+    h_resize_up(ht);
+  }
+
 	h_record* new_record = h_init_record(key, value);
 
   int i = 0;
@@ -162,7 +215,7 @@ void h_insert (h_table* ht, const char* key, const char* value) {
 }
 
 /**
- * @brief Search
+ * @brief Search for the record corresponding to the given key
  *
  * @param ht
  * @param key
@@ -192,7 +245,25 @@ char* h_retrieve (h_table* ht, const char* key) {
 	return r ? r->value : NULL;
 }
 
-/**c
+/**
+ * @brief Delete a hash table and deallocate its memory
+ *
+ * @param ht Hash table to delete
+ */
+void h_delete_table (h_table* ht) {
+	for (int i = 0; i < ht->capacity; i++) {
+		h_record* r = ht->records[i];
+
+		if (r != NULL && r != &H_RECORD_SENTINEL) {
+			h_delete_record(r);
+		}
+	}
+
+	free(ht->records);
+	free(ht);
+}
+
+/**
  * @brief Delete a record for the given key `key`. Because records
  * may be part of a collision chain, and removing them completely
  * could cause infinite lookup attempts, we replace the deleted record
@@ -205,6 +276,12 @@ char* h_retrieve (h_table* ht, const char* key) {
  * to the given key could be found
  */
 int h_delete (h_table* ht, const char* key) {
+	const int load = ht->count * 100 / ht->capacity;
+
+	if (load < 10) {
+  	h_resize_down(ht);
+  }
+
 	int ret = 1;
   int i = 0;
 	int idx = h_resolve_hash(key, ht->capacity, i);
@@ -218,6 +295,8 @@ int h_delete (h_table* ht, const char* key) {
 
 			ret = 0;
 			ht->count--;
+
+			return ret;
 		}
 
     idx = h_resolve_hash(key, ht->capacity, ++i);
