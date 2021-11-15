@@ -3,7 +3,7 @@ IFS=$'\n'
 
 TESTING_DIR=t
 UTIL_F=util.bash
-REPO_DIR=hashed
+REPO_DIR=hash
 
 declare -a SKIP_FILES=(
 

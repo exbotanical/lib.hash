@@ -1,4 +1,4 @@
-# lib.hashed
+# lib.hash
 
 Collision-free hash tables for C.
 
@@ -8,16 +8,16 @@ For best performance, initialize with a prime number.
 
 ## Dynamic Linking
 
-Linking to `lib.hashed`:
+Linking to `lib.hash`:
 
 ```bash
-# 1) include and use lib.hashed in your project
+# 1) include and use lib.hash in your project
 # 2) generate object file for your project
-gcc -I ../path/to/lib.hashed -c main.c -o main.o
+gcc -I ../path/to/lib.hash -c main.c -o main.o
 # 3) generate shared object file
 make
-# 4) link your project to lib.hashed
-gcc -o main main.o -L../path/to/lib.hashed -lhashed
+# 4) link your project to lib.hash
+gcc -o main main.o -L../path/to/lib.hash -lhash
 # you may need to add the lib location to your PATH
 ```
 

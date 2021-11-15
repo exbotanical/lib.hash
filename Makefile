@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-g -fPIC -Ideps -lm -Wall -Wextra -pedantic -std=c17
+CFLAGS=-g -fPIC -Ideps -lm -Wall -Wextra -pedantic
 LDFLAGS=-shared -o
 
-BIN=libhashed.so
+BIN=libhash.so
 
 OBJFILES=$(wildcard src/*.c)
 DEPS=$(wildcard deps/*/*.c)

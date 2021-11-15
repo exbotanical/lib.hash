@@ -1,5 +1,5 @@
-#ifndef HASHED_H
-#define HASHED_H
+#ifndef HASH_H
+#define HASH_H
 
 /**
  * A hash table record i.e. key / value pair
@@ -35,8 +35,16 @@ typedef struct {
 	h_record** records;
 } h_table;
 
-h_table* h_init_table (int max_capacity);
+h_table* h_init_table (int base_capacity);
+
+void h_insert (h_table* ht, const char* key, const char* value);
+
+h_record* h_search (h_table* ht, const char* key);
+
+char* h_retrieve (h_table* ht, const char* key);
 
 void h_delete_table (h_table* ht);
 
-#endif /* HASHED_H */
+int h_delete (h_table* ht, const char* key);
+
+#endif /* HASH_H */

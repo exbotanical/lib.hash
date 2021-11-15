@@ -1,16 +1,16 @@
 {
-  "name": "lib.hashed",
+  "name": "lib.hash",
   "version": "0.0.1",
   "author": "Matthew Zito (goldmund)",
-  "repo": "MatthewZito/lib.hashed",
+  "repo": "MatthewZito/lib.hash",
   "license": "MIT",
   "description": "",
   "keywords": [
 
   ],
   "src": [
-    "src/hashed.h",
-    "src/hashed.c",
+    "src/hash.h",
+    "src/hash.c",
     "src/prime.h",
     "src/prime.c"
   ],

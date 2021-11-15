@@ -1,7 +1,7 @@
 #include "tap.c/tap.h"
 // include the entire source so we may test static functions
 // without conditional compilation
-#include "hashed.c"
+#include "hash.c"
 #include <stdio.h>
 
 void test_initialization (void) {

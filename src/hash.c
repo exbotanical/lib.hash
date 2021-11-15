@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "prime.h"
-#include "hashed.h"
+#include "hash.h"
 
 static h_record H_RECORD_SENTINEL = {
 	NULL,
