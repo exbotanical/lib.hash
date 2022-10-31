@@ -1,12 +1,15 @@
 {
   "name": "lib.hash",
   "version": "0.0.1",
-  "author": "Matthew Zito (goldmund)",
-  "repo": "MatthewZito/lib.hash",
+  "author": "Matthew Zito",
+  "repo": "exbotanical/lib.hash",
   "license": "MIT",
-  "description": "",
+  "description": "A simple open-addressed, double-hashed hash table",
   "keywords": [
-
+		"hashing",
+		"hash table",
+		"data structure",
+		"open addressing"
   ],
   "src": [
     "src/hash.h",
