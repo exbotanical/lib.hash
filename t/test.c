@@ -6,11 +6,11 @@
 
 void test_initialization (void) {
 	int capacity = 20;
-	char* k = "key";
-	char* v = "value";
+	char *k = "key";
+	char *v = "value";
 
-	h_table* ht = h_init_table(capacity);
-	h_record* r = h_init_record(k, v);
+	h_table *ht = h_init_table(capacity);
+	h_record *r = h_init_record(k, v);
 
 	isnt(ht, NULL, "hash table is not NULL");
 	is(ht->base_capacity, capacity, "given base capacity has been set");
@@ -32,7 +32,7 @@ void test_initialization (void) {
 }
 
 void test_insert (void) {
-	h_table* ht = h_init_table(10);
+	h_table *ht = h_init_table(10);
 
 	h_insert(ht, "k1", "v1");
 
@@ -57,7 +57,7 @@ void test_insert (void) {
 }
 
 void test_search (void) {
-	h_table* ht = h_init_table(10);
+	h_table *ht = h_init_table(10);
 
 	h_insert(ht, "k1", "v1");
 	h_insert(ht, "k2", "v2");
@@ -74,7 +74,7 @@ void test_search (void) {
 }
 
 void test_delete (void) {
-	h_table* ht = h_init_table(10);
+	h_table *ht = h_init_table(10);
 
 	h_insert(ht, "k1", "v1");
 	h_insert(ht, "k2", "v2");
@@ -94,10 +94,10 @@ void test_delete (void) {
 
 void test_capacity (void) {
 	int initial_cap = 23;
-	h_table* ht = h_init_table(initial_cap);
+	h_table *ht = h_init_table(initial_cap);
 
 	for (int i = 0; i < initial_cap; i++) {
-		char* buf;
+		char *buf;
 		snprintf(buf, 5, "%s%d", "k", i);
 
 		h_insert(ht, buf, "x");
@@ -110,7 +110,7 @@ void test_capacity (void) {
 	is(ht->count, initial_cap + 1, "maintains the count");
 }
 
-int main (int argc, char* argv[]) {
+int main (int argc, char *argv[]) {
 	plan(33);
 
 	test_initialization();

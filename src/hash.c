@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE /* For strdup w/ c99 */
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,18 +25,16 @@ static const int H_PRIME_2 = 163;
  * @param capacity
  * @return int
  */
-static int h_hash (const char* key, const int prime, const int capacity) {
+static int h_hash (const char *key, const int prime, const int capacity) {
 	long hash = 0;
 
 	const int len_s = strlen(key);
-
 	for (int i = 0; i < len_s; i++) {
 		// convert the key to a large integer
 		hash += (long)pow(prime, len_s - (i+1)) * key[i];
 		// reduce said large integer to a fixed range
+		hash = hash % capacity;
 	}
-
-	hash = hash % capacity;
 
 	return (int)hash;
 }
@@ -54,7 +54,7 @@ static int h_hash (const char* key, const int prime, const int capacity) {
  * @return int
  */
 static int h_resolve_hash (
-	const char* key, const int capacity, const int attempt
+	const char *key, const int capacity, const int attempt
 ) {
 	const int hash_a = h_hash(key, H_PRIME_1, capacity);
 	const int hash_b = h_hash(key, H_PRIME_2, capacity);
@@ -73,15 +73,15 @@ static int h_resolve_hash (
  * @param base_capacity
  * @return int
  */
-static void h_resize (h_table* ht, const int base_capacity) {
+static void h_resize (h_table *ht, const int base_capacity) {
 	if (base_capacity < 0) {
 		return;
 	}
 
-	h_table* new_ht = h_init_table(base_capacity);
+	h_table *new_ht = h_init_table(base_capacity);
 
 	for (int i = 0; i < ht->capacity; i++) {
-		h_record* r = ht->records[i];
+		h_record *r = ht->records[i];
 
 		if (r != NULL && r != &H_RECORD_SENTINEL) {
 			h_insert(new_ht, r->key, r->value);
@@ -96,7 +96,7 @@ static void h_resize (h_table* ht, const int base_capacity) {
 	ht->capacity = new_ht->capacity;
 	new_ht->capacity = tmp_capacity;
 
-	h_record** tmp_records = ht->records;
+	h_record ** tmp_records = ht->records;
 	ht->records = new_ht->records;
 	new_ht->records = tmp_records;
 
@@ -109,7 +109,7 @@ static void h_resize (h_table* ht, const int base_capacity) {
  *
  * @param ht
  */
-static void h_resize_up (h_table* ht) {
+static void h_resize_up (h_table *ht) {
   const int new_capacity = ht->base_capacity * 2;
 
   h_resize(ht, new_capacity);
@@ -121,7 +121,7 @@ static void h_resize_up (h_table* ht) {
  *
  * @param ht
  */
-static void h_resize_down (h_table* ht) {
+static void h_resize_down (h_table *ht) {
   const int new_capacity = ht->base_capacity / 2;
 
   h_resize(ht, new_capacity);
@@ -134,10 +134,10 @@ static void h_resize_down (h_table* ht) {
  * @param v Record value
  * @return h_record*
  */
-static h_record* h_init_record (const char* k, const char* v) {
-	h_record* r = malloc(sizeof(h_record));
+static h_record *h_init_record (const char *k, void *v) {
+	h_record *r = malloc(sizeof(h_record));
 	r->key = strdup(k);
-	r->value = strdup(v);
+	r->value = v;
 
 	return r;
 }
@@ -147,9 +147,9 @@ static h_record* h_init_record (const char* k, const char* v) {
  *
  * @param r Record to delete
  */
-static void h_delete_record (h_record* r) {
+static void h_delete_record (h_record *r) {
 	free(r->key);
-	free(r->value);
+	// free(r->value);
 	free(r);
 }
 
@@ -159,12 +159,12 @@ static void h_delete_record (h_record* r) {
  * @param max_size The hash table capacity
  * @return h_table*
  */
-h_table* h_init_table (int base_capacity) {
+h_table *h_init_table (int base_capacity) {
 	if (!base_capacity) {
 		base_capacity = H_DEFAULT_CAPACITY;
 	}
 
-	h_table* ht = malloc(sizeof(h_table));
+	h_table *ht = malloc(sizeof(h_table));
 	ht->base_capacity = base_capacity;
 
 	ht->capacity = next_prime(ht->base_capacity);
@@ -181,19 +181,21 @@ h_table* h_init_table (int base_capacity) {
  * @param key
  * @param value
  */
-void h_insert (h_table* ht, const char* key, const char* value) {
-	const int load = ht->count * 100 / ht->capacity;
+void h_insert (h_table *ht, const char *key, void *value) {
+	if (ht == NULL) {
+		return;
+	}
 
+	const int load = ht->count * 100 / ht->capacity;
   if (load > 70) {
     h_resize_up(ht);
   }
 
-	h_record* new_record = h_init_record(key, value);
+	h_record *new_record = h_init_record(key, value);
 
-  int i = 0;
-  int idx = h_resolve_hash(new_record->key, ht->capacity, i);
-
-  h_record* current_record = ht->records[idx];
+  int idx = h_resolve_hash(new_record->key, ht->capacity, 0);
+  h_record *current_record = ht->records[idx];
+  int i = 1;
 
 	// i.e. if there was a collision
   while (current_record != NULL && current_record != &H_RECORD_SENTINEL) {
@@ -206,8 +208,9 @@ void h_insert (h_table* ht, const char* key, const char* value) {
     }
 
 		// TODO verify i is 1..
-    idx = h_resolve_hash(new_record->key, ht->capacity, ++i);
+    idx = h_resolve_hash(new_record->key, ht->capacity, i);
 		current_record = ht->records[idx];
+		i++;
   }
 
   ht->records[idx] = new_record;
@@ -221,26 +224,26 @@ void h_insert (h_table* ht, const char* key, const char* value) {
  * @param key
  * @return char*
  */
-h_record* h_search (h_table* ht, const char* key) {
-  int i = 0;
-  int idx = h_resolve_hash(key, ht->capacity, i);
-
-  h_record* current_record = ht->records[idx];
+h_record *h_search (h_table *ht, const char *key) {
+  int idx = h_resolve_hash(key, ht->capacity, 0);
+  h_record *current_record = ht->records[idx];
+  int i = 1;
 
   while (current_record != NULL && current_record != &H_RECORD_SENTINEL) {
 		if (strcmp(current_record->key, key) == 0) {
 			return current_record;
 		}
 
-    idx = h_resolve_hash(key, ht->capacity, ++i);
+    idx = h_resolve_hash(key, ht->capacity, i);
 		current_record = ht->records[idx];
+		i++;
   }
 
 	return NULL;
 }
 
-char* h_retrieve (h_table* ht, const char* key) {
-	h_record* r = h_search(ht, key);
+char *h_retrieve (h_table *ht, const char *key) {
+	h_record *r = h_search(ht, key);
 
 	return r ? r->value : NULL;
 }
@@ -250,9 +253,9 @@ char* h_retrieve (h_table* ht, const char* key) {
  *
  * @param ht Hash table to delete
  */
-void h_delete_table (h_table* ht) {
+void h_delete_table (h_table *ht) {
 	for (int i = 0; i < ht->capacity; i++) {
-		h_record* r = ht->records[i];
+		h_record *r = ht->records[i];
 
 		if (r != NULL && r != &H_RECORD_SENTINEL) {
 			h_delete_record(r);
@@ -275,7 +278,7 @@ void h_delete_table (h_table* ht) {
  * @return int 0 if a record was deleted, 1 if no record corresponding
  * to the given key could be found
  */
-int h_delete (h_table* ht, const char* key) {
+int h_delete (h_table *ht, const char *key) {
 	const int load = ht->count * 100 / ht->capacity;
 
 	if (load < 10) {
@@ -286,7 +289,7 @@ int h_delete (h_table* ht, const char* key) {
   int i = 0;
 	int idx = h_resolve_hash(key, ht->capacity, i);
 
-	h_record* current_record = ht->records[idx];
+	h_record *current_record = ht->records[idx];
 
 	while (current_record != NULL && current_record != &H_RECORD_SENTINEL) {
 		if (strcmp(current_record->key, key) == 0) {

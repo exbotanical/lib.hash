@@ -5,8 +5,8 @@
  * A hash table record i.e. key / value pair
  */
 typedef struct {
-	char* key;
-	char* value;
+	char *key;
+	void *value;
 } h_record;
 
 /**
@@ -32,19 +32,19 @@ typedef struct {
 	/**
 	 * The hash table's records
 	 */
-	h_record** records;
+	h_record ** records;
 } h_table;
 
-h_table* h_init_table (int base_capacity);
+h_table *h_init_table (int base_capacity);
 
-void h_insert (h_table* ht, const char* key, const char* value);
+void h_insert (h_table *ht, const char *key, void *value);
 
-h_record* h_search (h_table* ht, const char* key);
+h_record *h_search (h_table *ht, const char *key);
 
-char* h_retrieve (h_table* ht, const char* key);
+char *h_retrieve (h_table *ht, const char *key);
 
-void h_delete_table (h_table* ht);
+void h_delete_table (h_table *ht);
 
-int h_delete (h_table* ht, const char* key);
+int h_delete (h_table *ht, const char *key);
 
 #endif /* HASH_H */
