@@ -1,22 +1,61 @@
-CC=gcc
-CFLAGS=-g -fPIC -Ideps -lm -Wall -Wextra -pedantic
-LDFLAGS=-shared -o
+# Directories
+SRC_DIR := src
+DEP_DIR := deps
+INCLUDE_DIR := include
 
-BIN=libhash.so
+# Compiler
+CC := gcc
+CFLAGS := -I$(INCLUDE_DIR) -Wall -Wextra -pedantic -std=c17
 
-OBJFILES=$(wildcard src/*.c)
-DEPS=$(wildcard deps/*/*.c)
+# Targets
+TARGET := libhash.a
+EXAMPLE_TARGET := example
+TEST_TARGET := test
 
-TESTS = $(patsubst %.c, %, $(wildcard t/*.c))
+# Metadata
+LINK_NAME := $(patsubst lib%,%,$(patsubst %.a,%, $(TARGET)))
 
-all:
-	$(CC) $(CFLAGS) $(DEPS) $(OBJFILES) $(LDFLAGS) $(BIN)
+# Source files
+SRCS := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(DEP_DIR)/*/*.c)
+
+# Object files
+OBJS := $(patsubst %.c,%.o,$(SRCS))
+
+# Test files
+TESTS := $(wildcard t/*.c)
+
+# Constants
+SEPARATOR := ---------------------------
+
+# Rule to build object files from source files
+%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: $(DEP_DIR)/%/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to create the static library
+$(TARGET): $(OBJS)
+	ar rcs $@ $^
+	rm $(OBJS)
+
+# Rule to build the example executable
+$(EXAMPLE_TARGET): examples/main.c $(TARGET)
+	$(CC) -I$(SRC_DIR) -I$(DEP_DIR) $(CFLAGS) $< -L./ -l$(LINK_NAME) -o $@ -lm
+
+.PHONY: clean test .compile_test
 
 clean:
-	rm -f $(TARGET) $(BIN) $(BIN).so main*
+	rm -f $(OBJS) $(TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
-test:
-	./scripts/test.bash
-	$(MAKE) clean
+# `make -s test`
+test: $(TARGET)
+	$(foreach test,$(TESTS),					  																											\
+		$(MAKE) .compile_test file=$(test); 																										\
+		printf "\033[1;32m\nRunning test $(patsubst t/%,%,$(test))...\n$(SEPARATOR)\n\033[0m";	\
+		./test;\
+ 	)
+	rm $(TEST_TARGET)
 
-.PHONY: test clean
+.compile_test:
+	$(CC) -D debug -I$(INCLUDE_DIR) -I$(DEP_DIR) -I$(SRC_DIR) $(file) -o $(TEST_TARGET) -L./ -l$(LINK_NAME) -lm

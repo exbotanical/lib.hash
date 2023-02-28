@@ -1,4 +1,4 @@
-*.so
+*.a
 *.o
-lib.hash
-main
+test
+deps
