@@ -28,11 +28,8 @@ TESTS := $(wildcard t/*.c)
 SEPARATOR := ---------------------------
 
 # Rule to build object files from source files
-%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: $(DEP_DIR)/%/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(DEP_DIR)
 
 # Rule to create the static library
 $(TARGET): $(OBJS)
@@ -54,6 +51,7 @@ test: $(TARGET)
 		$(MAKE) .compile_test file=$(test); 																										\
 		printf "\033[1;32m\nRunning test $(patsubst t/%,%,$(test))...\n$(SEPARATOR)\n\033[0m";	\
 		./test;\
+		printf "\033[1;32m\n$(SEPARATOR)\n\033[0m";	\
  	)
 	rm $(TEST_TARGET)
 
