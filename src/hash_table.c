@@ -12,7 +12,7 @@ const int H_DEFAULT_CAPACITY = 50;
 
 /**
  * Resize the hash table. This implementation has a set capacity;
- * hash collisions rise beyond the capacity and `h_instert` will fail.
+ * hash collisions rise beyond the capacity and `ht_insert` will fail.
  * To mitigate this, we resize up if the load (measured as the ratio of records
  * count to capacity) is less than .1, or down if the load exceeds .7. To
  * resize, we create a new table approx. 1/2x or 2x times the current table
@@ -22,7 +22,7 @@ const int H_DEFAULT_CAPACITY = 50;
  * @param base_capacity
  * @return int
  */
-static void h_resize(hash_table *ht, const int base_capacity) {
+static void ht_resize(hash_table *ht, const int base_capacity) {
   if (base_capacity < 0) {
     return;
   }
@@ -58,10 +58,10 @@ static void h_resize(hash_table *ht, const int base_capacity) {
  *
  * @param ht
  */
-static void h_resize_up(hash_table *ht) {
+static void ht_resize_up(hash_table *ht) {
   const int new_capacity = ht->base_capacity * 2;
 
-  h_resize(ht, new_capacity);
+  ht_resize(ht, new_capacity);
 }
 
 /**
@@ -70,10 +70,10 @@ static void h_resize_up(hash_table *ht) {
  *
  * @param ht
  */
-static void h_resize_down(hash_table *ht) {
+static void ht_resize_down(hash_table *ht) {
   const int new_capacity = ht->base_capacity / 2;
 
-  h_resize(ht, new_capacity);
+  ht_resize(ht, new_capacity);
 }
 
 /**
@@ -83,7 +83,7 @@ static void h_resize_down(hash_table *ht) {
  * @param v Record value
  * @return ht_record*
  */
-static ht_record *h_init_record(const char *k, void *v) {
+static ht_record *ht_record_init(const char *k, void *v) {
   ht_record *r = malloc(sizeof(ht_record));
   r->key = strdup(k);
   r->value = v;
@@ -124,10 +124,10 @@ void ht_insert(hash_table *ht, const char *key, void *value) {
 
   const int load = ht->count * 100 / ht->capacity;
   if (load > 70) {
-    h_resize_up(ht);
+    ht_resize_up(ht);
   }
 
-  ht_record *new_record = h_init_record(key, value);
+  ht_record *new_record = ht_record_init(key, value);
 
   int idx = h_resolve_hash(new_record->key, ht->capacity, 0);
 
@@ -195,7 +195,7 @@ int ht_delete(hash_table *ht, const char *key) {
   const int load = ht->count * 100 / ht->capacity;
 
   if (load < 10) {
-    h_resize_down(ht);
+    ht_resize_down(ht);
   }
 
   int i = 0;

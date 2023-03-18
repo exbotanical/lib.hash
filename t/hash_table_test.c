@@ -13,7 +13,7 @@ void test_initialization(void) {
   char *v = "value";
 
   hash_table *ht = ht_init(capacity);
-  ht_record *r = h_init_record(k, v);
+  ht_record *r = ht_record_init(k, v);
 
   ok(ht != NULL, "hash table is not NULL");
   ok(ht->base_capacity == capacity, "given base capacity has been set");

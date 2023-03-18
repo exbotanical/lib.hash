@@ -1,11 +1,12 @@
 # libhash
 
-Collision-free hash tables for C.
+Collision-free hash tables and hash sets for C.
 
-Implemented as an open-addressed, double-hashed table.
+Implemented as open-addressed and double-hashed.
 
 For best performance, initialize with a prime number.
 
 ## TODOs
 
 - [ ] add docs
+- [ ] complete examples
