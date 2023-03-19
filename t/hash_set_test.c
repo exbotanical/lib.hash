@@ -116,6 +116,15 @@ void test_capacity(void) {
   ok(hs->count == initial_cap, "maintains the count");
 }
 
+void test_contains_miss() {
+  hash_set *hs = hs_init(2);
+
+  hs_insert(hs, "Content-Type");
+  hs_insert(hs, "Content-Length");
+
+  ok(hs_contains(hs, "key2") == 0, "does not contain the key");
+}
+
 int main(int argc, char *argv[]) {
   plan(30);
 
@@ -124,6 +133,7 @@ int main(int argc, char *argv[]) {
   test_contains();
   test_delete();
   test_capacity();
+  test_contains_miss();
 
   done_testing();
 }
