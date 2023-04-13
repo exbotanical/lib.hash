@@ -126,7 +126,7 @@ void test_contains_miss(void) {
 }
 
 int main(int argc, char *argv[]) {
-  plan(30);
+  plan(31);
 
   test_initialization();
   test_insert();
