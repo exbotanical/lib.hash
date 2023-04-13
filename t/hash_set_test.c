@@ -116,7 +116,7 @@ void test_capacity(void) {
   ok(hs->count == initial_cap, "maintains the count");
 }
 
-void test_contains_miss() {
+void test_contains_miss(void) {
   hash_set *hs = hs_init(2);
 
   hs_insert(hs, "Content-Type");
