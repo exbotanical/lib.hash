@@ -1,30 +1,23 @@
-# Directories
 SRC_DIR := src
 DEP_DIR := deps
 INCLUDE_DIR := include
 
-# Compiler
 CC := gcc
 CFLAGS := -I$(INCLUDE_DIR) -Wall -Wextra -pedantic -std=c17
 
-# Targets
 TARGET := libhash.a
 EXAMPLE_TARGET := example
 TEST_TARGET := test
 
-# Metadata
 LINK_NAME := $(patsubst lib%,%,$(patsubst %.a,%, $(TARGET)))
 
-# Source files
-SRCS := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(DEP_DIR)/*/*.c)
+SRCS := $(wildcard $(SRC_DIR)/*.c) $(filter-out $(DEP_DIR)/tap.c/%, $(wildcard $(DEP_DIR)/*/*.c))
+TEST_DEPS := $(wildcard $(DEP_DIR)/tap.c/*.c)
 
-# Object files
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 
-# Test files
 TESTS := $(wildcard t/*.c)
 
-# Constants
 SEPARATOR := ---------------------------
 
 # Rule to build object files from source files
@@ -56,4 +49,4 @@ test: $(TARGET)
 	rm $(TEST_TARGET)
 
 .compile_test:
-	$(CC) -D debug -I$(INCLUDE_DIR) -I$(DEP_DIR) -I$(SRC_DIR) $(file) -o $(TEST_TARGET) -L./ -l$(LINK_NAME) -lm
+	$(CC) -D debug -I$(INCLUDE_DIR) -I$(DEP_DIR) -I$(SRC_DIR) $(file) $(TEST_DEPS) -o $(TEST_TARGET) -L./ -l$(LINK_NAME) -lm
