@@ -1,52 +1,78 @@
-SRC_DIR := src
-DEP_DIR := deps
-INCLUDE_DIR := include
+CC ?= gcc
+AR ?= ar
+LINTER ?= clang-format
 
-CC := gcc
-CFLAGS := -I$(INCLUDE_DIR) -Wall -Wextra -pedantic -std=c17
+LIB := libhash
 
-TARGET := libhash.a
+PREFIX := /usr/local
+INCDIR := $(PREFIX)/include
+LIBDIR := $(PREFIX)/lib
+SRCDIR := src
+DEPSDIR := deps
+TESTDIR := t
+EXAMPLEDIR := examples
+LINCDIR := include
+
+DYNAMIC_TARGET := $(LIB).so
+STATIC_TARGET := $(LIB).a
 EXAMPLE_TARGET := example
 TEST_TARGET := test
 
-LINK_NAME := $(patsubst lib%,%,$(patsubst %.a,%, $(TARGET)))
+SRC := $(wildcard $(SRCDIR)/*.c)
+TEST_DEPS := $(wildcard $(DEPSDIR)/tap.c/*.c)
+DEPS := $(filter-out $(wildcard $(DEPSDIR)/tap.c/*), $(wildcard $(DEPSDIR)/*/*.c))
+OBJ := $(addprefix obj/, $(notdir $(SRC:.c=.o)) $(notdir $(DEPS:.c=.o)))
 
-SRCS := $(wildcard $(SRC_DIR)/*.c) $(filter-out $(DEP_DIR)/tap.c/%, $(wildcard $(DEP_DIR)/*/*.c))
-TEST_DEPS := $(wildcard $(DEP_DIR)/tap.c/*.c)
+CFLAGS := -I$(LINCDIR) -I$(DEPSDIR) -Wall -Wextra -pedantic -std=c17
+LIBS := -lm
 
-OBJS := $(patsubst %.c,%.o,$(SRCS))
-
-TESTS := $(wildcard t/*.c)
+TESTS := $(wildcard $(TESTDIR)/*.c)
 
 SEPARATOR := ---------------------------
 
-# Rule to build object files from source files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@ -I$(DEP_DIR)
+all: $(DYNAMIC_TARGET) $(STATIC_TARGET)
 
-# Rule to create the static library
-$(TARGET): $(OBJS)
-	ar rcs $@ $^
-	rm $(OBJS)
+$(DYNAMIC_TARGET): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -shared $(LIBS) -o $(DYNAMIC_TARGET)
 
-# Rule to build the example executable
-$(EXAMPLE_TARGET): examples/main.c $(TARGET)
-	$(CC) -I$(SRC_DIR) -I$(DEP_DIR) $(CFLAGS) $< -L./ -l$(LINK_NAME) -o $@ -lm
+$(STATIC_TARGET): $(OBJ)
+	$(AR) rcs $@ $(OBJ)
 
-.PHONY: clean test .compile_test
+obj/%.o: $(SRCDIR)/%.c $(LINCDIR)/$(LIB).h | obj
+	$(CC) $< -c $(CFLAGS) -o $@
+
+obj/%.o: $(DEPSDIR)/*/%.c | obj
+	$(CC) $< -c $(CFLAGS) -o $@
+
+obj:
+	mkdir -p obj
+
+install: $(STATIC_TARGET)
+	mkdir -p ${LIBDIR} && cp -f ${STATIC_TARGET} ${LIBDIR}/$(STATIC_TARGET)
+	mkdir -p ${INCDIR} && cp -r $(LINCDIR)/$(LIB).h ${INCDIR}
+
+uninstall:
+	rm -f ${LIBDIR}/$(STATIC_TARGET)
+	rm -f ${INCDIR}/libys.h
+
+$(EXAMPLE_TARGET): $(STATIC_TARGET)
+	$(CC) $(CFLAGS) $(EXAMPLEDIR)/main.c $(STATIC_TARGET) $(LIBS) -o $(EXAMPLE_TARGET)
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
+	rm -f $(OBJ) $(STATIC_TARGET) $(DYNAMIC_TARGET) $(EXAMPLE_TARGET) $(TEST_TARGET)
 
-# `make -s test`
-test: $(TARGET)
+test: $(STATIC_TARGET)
 	$(foreach test,$(TESTS),					  																											\
 		$(MAKE) .compile_test file=$(test); 																										\
-		printf "\033[1;32m\nRunning test $(patsubst t/%,%,$(test))...\n$(SEPARATOR)\n\033[0m";	\
+		printf "\033[1;32m\nRunning test $(patsubst $(TESTDIR)/%,%,$(test))...\n$(SEPARATOR)\n\033[0m";	\
 		./test;\
-		printf "\033[1;32m\n$(SEPARATOR)\n\033[0m";	\
  	)
 	rm $(TEST_TARGET)
 
 .compile_test:
-	$(CC) -D debug -I$(INCLUDE_DIR) -I$(DEP_DIR) -I$(SRC_DIR) $(file) $(TEST_DEPS) -o $(TEST_TARGET) -L./ -l$(LINK_NAME) -lm
+	$(CC) $(CFLAGS) $(file) $(TEST_DEPS) $(STATIC_TARGET) -I$(SRCDIR) -I$(DEPSDIR) $(LIBS) -o $(TEST_TARGET)
+
+lint:
+	$(LINTER) -i $(wildcard $(SRCDIR)/*) $(wildcard $(TESTDIR)/*) $(wildcard $(LINCDIR)/*) $(wildcard $(EXAMPLEDIR)/*)
+
+.PHONY: clean test .compile_test all obj install uninstall lint
