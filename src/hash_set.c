@@ -6,7 +6,7 @@
 #include "prime.h"
 #include "strdup/strdup.h"
 
-static const int H_DEFAULT_CAPACITY = 50;
+static const int HS_DEFAULT_CAPACITY = 50;
 
 /**
  * Resize the hash set. This implementation has a set capacity;
@@ -83,7 +83,7 @@ static void hs_delete_key(char *r) { free(r); }
 
 hash_set *hs_init(int base_capacity) {
   if (!base_capacity) {
-    base_capacity = H_DEFAULT_CAPACITY;
+    base_capacity = HS_DEFAULT_CAPACITY;
   }
 
   hash_set *hs = malloc(sizeof(hash_set));
