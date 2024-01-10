@@ -9,7 +9,7 @@
 
 static ht_record HT_RECORD_SENTINEL = {NULL, NULL};
 
-const int H_DEFAULT_CAPACITY = 50;
+const int HT_DEFAULT_CAPACITY = 50;
 
 static void __ht_insert(hash_table *ht, const char *key, void *value,
                         bool free_value);
@@ -194,7 +194,7 @@ static void __ht_delete_table(hash_table *ht, bool free_value) {
 
 hash_table *ht_init(int base_capacity) {
   if (!base_capacity) {
-    base_capacity = H_DEFAULT_CAPACITY;
+    base_capacity = HT_DEFAULT_CAPACITY;
   }
 
   hash_table *ht = malloc(sizeof(hash_table));
