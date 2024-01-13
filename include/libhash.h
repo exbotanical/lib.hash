@@ -51,7 +51,6 @@ hash_table *ht_init(int base_capacity);
  *
  * @param ht
  * @param key
- * @param value
  */
 void ht_insert(hash_table *ht, const char *key, void *value);
 
@@ -75,6 +74,13 @@ void ht_insert_ptr(hash_table *ht, const char *key, void *value);
  */
 ht_record *ht_search(hash_table *ht, const char *key);
 
+/**
+ * Eagerly retrieve the value inside of the entry stored at the given key.
+ * Will segfault if the key entry does not exist.
+ *
+ * @param ht
+ * @param key
+ */
 void *ht_get(hash_table *ht, const char *key);
 
 /**
@@ -103,7 +109,7 @@ void ht_delete_table_ptr(hash_table *ht);
  * @param ht
  * @param key
  *
- * @return int 1 if a record was deleted, 0 if no record corresponding
+ * @return 1 if a record was deleted, 0 if no record corresponding
  * to the given key could be found
  */
 int ht_delete(hash_table *ht, const char *key);
@@ -120,7 +126,7 @@ int ht_delete(hash_table *ht, const char *key);
  * @param ht
  * @param key
  *
- * @return int 1 if a record was deleted, 0 if no record corresponding
+ * @return 1 if a record was deleted, 0 if no record corresponding
  * to the given key could be found
  */
 int ht_delete_ptr(hash_table *ht, const char *key);
@@ -169,7 +175,7 @@ void hs_insert(hash_set *hs, const void *key);
  *
  * @param hs
  * @param key
- * @return int 1 for true, 0 for false
+ * @return 1 for true, 0 for false
  */
 int hs_contains(hash_set *hs, const char *key);
 
@@ -186,7 +192,7 @@ void hs_delete_set(hash_set *hs);
  * @param hs
  * @param key
  *
- * @return int 1 if a key was deleted, 0 if the given key did not already exist
+ * @return 1 if a key was deleted, 0 if the given key did not already exist
  * in the set
  */
 int hs_delete(hash_set *hs, const char *key);
