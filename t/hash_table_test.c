@@ -13,7 +13,7 @@ void test_initialization(void) {
   char *v = "value";
 
   hash_table *ht = ht_init(capacity);
-  ht_record *r = ht_record_init(k, v);
+  ht_entry *r = ht_entry_init(k, v);
 
   ok(ht != NULL, "hash table is not NULL");
   ok(ht->base_capacity == capacity, "given base capacity has been set");
@@ -27,7 +27,7 @@ void test_initialization(void) {
   is(r->key, k, "key match");
   is(r->value, v, "value match");
 
-  lives_ok({ ht_delete_record(r, false); }, "frees the record heap memory");
+  lives_ok({ ht_delete_entry(r, false); }, "frees the entry heap memory");
 }
 
 void test_insert(void) {
@@ -35,10 +35,10 @@ void test_insert(void) {
 
   ht_insert(ht, "k1", "v1");
 
-  ok(ht->count == 1, "increments the count when a record is inserted");
+  ok(ht->count == 1, "increments the count when a entry is inserted");
 
   ht_insert(ht, "k2", "v2");
-  ok(ht->count == 2, "increments the count when another record is inserted");
+  ok(ht->count == 2, "increments the count when another entry is inserted");
 
   is(ht_get(ht, "k1"), "v1", "retrieves the correct value");
   is(ht_get(ht, "k2"), "v2", "retrieves the correct value");
@@ -54,7 +54,7 @@ void test_insert(void) {
   ht_insert(ht, "k1", "v1");
   ok(ht->count == 2, "count after insertion");
   is(ht_get(ht, "k1"), "v1",
-     "inserts the record clean after having been deleted");
+     "inserts the entry clean after having been deleted");
 }
 
 void test_search(void) {
@@ -69,10 +69,10 @@ void test_search(void) {
   is(ht_get(ht, "k2"), "v2", "retrieves the value");
   is(ht_get(ht, "k3"), "v3", "retrieves the value");
   is(ht_get(ht, "k4"), NULL,
-     "returns NULL if the search does not yield a record");
+     "returns NULL if the search does not yield a entry");
 
   ht_delete(ht, "k1");
-  is(ht_get(ht, "k1"), NULL, "returns NULL if the record was deleted");
+  is(ht_get(ht, "k1"), NULL, "returns NULL if the entry was deleted");
 }
 
 void test_delete(void) {
@@ -82,20 +82,17 @@ void test_delete(void) {
   ht_insert(ht, "k2", "v2");
   ht_insert(ht, "k3", "v3");
 
-  ok(ht_delete(ht, "k1") == 1, "returns 1 when record deletion was successful");
-  ok(ht_delete(ht, "k2") == 1, "returns 1 when record deletion was successful");
-  ok(ht_delete(ht, "k3") == 1, "returns 1 when record deletion was successful");
+  ok(ht_delete(ht, "k1") == 1, "returns 1 when entry deletion was successful");
+  ok(ht_delete(ht, "k2") == 1, "returns 1 when entry deletion was successful");
+  ok(ht_delete(ht, "k3") == 1, "returns 1 when entry deletion was successful");
 
   ok(ht_delete(ht, "k4") == 0,
-     "returns 0 when record deletion was unsuccessful");
-  ok(ht_delete(ht, "k1") == 0, "cannot delete the same record twice");
+     "returns 0 when entry deletion was unsuccessful");
+  ok(ht_delete(ht, "k1") == 0, "cannot delete the same entry twice");
 
-  is(ht_get(ht, "k1"), NULL,
-     "returns NULL because the record has been deleted");
-  is(ht_get(ht, "k2"), NULL,
-     "returns NULL because the record has been deleted");
-  is(ht_get(ht, "k3"), NULL,
-     "returns NULL because the record has been deleted");
+  is(ht_get(ht, "k1"), NULL, "returns NULL because the entry has been deleted");
+  is(ht_get(ht, "k2"), NULL, "returns NULL because the entry has been deleted");
+  is(ht_get(ht, "k3"), NULL, "returns NULL because the entry has been deleted");
 }
 
 void test_capacity(void) {
@@ -129,30 +126,27 @@ void test_delete_ptr(void) {
   ht_insert_ptr(ht, "k3", v3);
 
   ok(ht_delete_ptr(ht, "k1") == 1,
-     "returns 1 when record deletion was successful");
+     "returns 1 when entry deletion was successful");
   ok(ht_delete_ptr(ht, "k2") == 1,
-     "returns 1 when record deletion was successful");
+     "returns 1 when entry deletion was successful");
   ok(ht_delete_ptr(ht, "k3") == 1,
-     "returns 1 when record deletion was successful");
+     "returns 1 when entry deletion was successful");
 
   ok(ht_delete_ptr(ht, "k4") == 0,
-     "returns 0 when record deletion was unsuccessful");
-  ok(ht_delete_ptr(ht, "k1") == 0, "cannot delete the same record twice");
+     "returns 0 when entry deletion was unsuccessful");
+  ok(ht_delete_ptr(ht, "k1") == 0, "cannot delete the same entry twice");
 
-  is(ht_get(ht, "k1"), NULL,
-     "returns NULL because the record has been deleted");
-  is(ht_get(ht, "k2"), NULL,
-     "returns NULL because the record has been deleted");
-  is(ht_get(ht, "k3"), NULL,
-     "returns NULL because the record has been deleted");
+  is(ht_get(ht, "k1"), NULL, "returns NULL because the entry has been deleted");
+  is(ht_get(ht, "k2"), NULL, "returns NULL because the entry has been deleted");
+  is(ht_get(ht, "k3"), NULL, "returns NULL because the entry has been deleted");
 
   // It'll be some junk value - just not the og value.
-  isnt(v1, "v1", "frees the record value");
-  isnt(v2, "v2", "frees the record value");
-  isnt(v3, "v3", "frees the record value");
+  isnt(v1, "v1", "frees the entry value");
+  isnt(v2, "v2", "frees the entry value");
+  isnt(v3, "v3", "frees the entry value");
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   plan(44);
 
   test_initialization();

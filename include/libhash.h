@@ -5,19 +5,19 @@
 #define HS_DEFAULT_CAPACITY 50
 
 /**
- * A hash table record i.e. key / value pair
+ * A hash table entry i.e. key / value pair
  */
 typedef struct {
   char *key;
   void *value;
-} ht_record;
+} ht_entry;
 
 /**
  * A hash table
  */
 typedef struct {
   /**
-   * Max number of records which may be stored in the hash table. Adjustable.
+   * Max number of entries which may be stored in the hash table. Adjustable.
    * Calculated as the first prime subsequent to the base capacity.
    */
   int capacity;
@@ -28,14 +28,14 @@ typedef struct {
   int base_capacity;
 
   /**
-   * Number of non-NULL records in the hash table
+   * Number of non-NULL entries in the hash table
    */
   int count;
 
   /**
-   * The hash table's records
+   * The hash table's entries
    */
-  ht_record **records;
+  ht_entry **entries;
 } hash_table;
 
 /**
@@ -57,8 +57,8 @@ void ht_insert(hash_table *ht, const char *key, void *value);
 /**
  * Insert a key, value pair into the given hash table.
  *
- * This version of ht_insert will also free the record value.
- * Thus, the record value must be allocated on the heap.
+ * This version of ht_insert will also free the entry value.
+ * Thus, the entry value must be allocated on the heap.
  *
  * @param ht
  * @param key
@@ -67,12 +67,12 @@ void ht_insert(hash_table *ht, const char *key, void *value);
 void ht_insert_ptr(hash_table *ht, const char *key, void *value);
 
 /**
- * Search for the record corresponding to the given key
+ * Search for the entry corresponding to the given key
  *
  * @param ht
  * @param key
  */
-ht_record *ht_search(hash_table *ht, const char *key);
+ht_entry *ht_search(hash_table *ht, const char *key);
 
 /**
  * Eagerly retrieve the value inside of the entry stored at the given key.
@@ -93,40 +93,40 @@ void ht_delete_table(hash_table *ht);
 /**
  * Delete a hash table and deallocate its memory
  *
- * This version of ht_delete_table will also free the record value.
- * Thus, the record value must be allocated on the heap.
+ * This version of ht_delete_table will also free the entry value.
+ * Thus, the entry value must be allocated on the heap.
  *
  * @param ht Hash table to delete
  */
 void ht_delete_table_ptr(hash_table *ht);
 
 /**
- * Delete a record for the given key `key`. Because records
+ * Delete a entry for the given key `key`. Because entries
  * may be part of a collision chain, and removing them completely
- * could cause infinite lookup attempts, we replace the deleted record
- * with a NULL sentinel record.
+ * could cause infinite lookup attempts, we replace the deleted entry
+ * with a NULL sentinel entry.
  *
  * @param ht
  * @param key
  *
- * @return 1 if a record was deleted, 0 if no record corresponding
+ * @return 1 if a entry was deleted, 0 if no entry corresponding
  * to the given key could be found
  */
 int ht_delete(hash_table *ht, const char *key);
 
 /**
- * Delete a record for the given key `key`. Because records
+ * Delete a entry for the given key `key`. Because entries
  * may be part of a collision chain, and removing them completely
- * could cause infinite lookup attempts, we replace the deleted record
- * with a NULL sentinel record.
+ * could cause infinite lookup attempts, we replace the deleted entry
+ * with a NULL sentinel entry.
  *
- * This version of ht_delete will also free the record value.
- * Thus, the record value must be allocated on the heap.
+ * This version of ht_delete will also free the entry value.
+ * Thus, the entry value must be allocated on the heap.
  *
  * @param ht
  * @param key
  *
- * @return 1 if a record was deleted, 0 if no record corresponding
+ * @return 1 if a entry was deleted, 0 if no entry corresponding
  * to the given key could be found
  */
 int ht_delete_ptr(hash_table *ht, const char *key);

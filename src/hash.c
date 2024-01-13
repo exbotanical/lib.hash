@@ -18,8 +18,8 @@ static const int H_PRIME_2 = 163;
 static int h_hash(const char *key, const int prime, const int capacity) {
   long hash = 0;
 
-  const int len_s = strlen(key);
-  for (int i = 0; i < len_s; i++) {
+  const size_t len_s = strlen(key);
+  for (unsigned int i = 0; i < len_s; i++) {
     // convert the key to a large integer
     hash += (long)pow(prime, len_s - (i + 1)) * key[i];
     // reduce said large integer to a fixed range

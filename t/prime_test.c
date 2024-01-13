@@ -7,7 +7,7 @@ static const int prime_map[] = {2,  3,  5,  7,  11, 13, 17, 19, 23,
                                 67, 71, 73, 79, 83, 89, 97};
 
 void test_is_prime(void) {
-  for (int i = 0; i < sizeof(prime_map) / sizeof(int); i++) {
+  for (unsigned int i = 0; i < sizeof(prime_map) / sizeof(int); i++) {
     int prime = prime_map[i];
 
     ok(is_prime(prime) == 1, "expected prime %d", prime);
@@ -15,7 +15,7 @@ void test_is_prime(void) {
 }
 
 void test_next_prime(void) {
-  for (int i = 2; i < sizeof(prime_map) / sizeof(int); i++) {
+  for (unsigned int i = 2; i < sizeof(prime_map) / sizeof(int); i++) {
     int prime = prime_map[i];
 
     ok(next_prime(prime - 1) == prime_map[i], "expected next prime %d", prime);

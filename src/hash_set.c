@@ -25,7 +25,7 @@ static void hs_resize(hash_set *hs, const int base_capacity) {
 
   hash_set *new_hs = hs_init(base_capacity);
 
-  for (int i = 0; i < hs->capacity; i++) {
+  for (unsigned int i = 0; i < hs->capacity; i++) {
     const char *r = hs->keys[i];
 
     if (r != NULL) {
@@ -104,7 +104,7 @@ void hs_insert(hash_set *hs, const void *key) {
     hs_resize_up(hs);
   }
 
-  void *new_record = strdup(key);
+  void *new_entry = strdup(key);
 
   int idx = h_resolve_hash(key, hs->capacity, 0);
   char *current_key = hs->keys[idx];
@@ -118,12 +118,12 @@ void hs_insert(hash_set *hs, const void *key) {
     }
 
     // TODO: verify i is 1..
-    idx = h_resolve_hash(new_record, hs->capacity, i);
+    idx = h_resolve_hash(new_entry, hs->capacity, i);
     current_key = hs->keys[idx];
     i++;
   }
 
-  hs->keys[idx] = new_record;
+  hs->keys[idx] = new_entry;
   hs->count++;
 }
 
@@ -152,7 +152,7 @@ int hs_contains(hash_set *hs, const char *key) {
 }
 
 void hs_delete_set(hash_set *hs) {
-  for (int i = 0; i < hs->capacity; i++) {
+  for (unsigned int i = 0; i < hs->capacity; i++) {
     char *r = hs->keys[i];
 
     if (r != NULL) {

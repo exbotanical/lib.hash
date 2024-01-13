@@ -66,7 +66,7 @@ void test_contains(void) {
   ok(hs_contains(hs, k4) == 0, "returns 0 if the search does not yield a key");
 
   hs_delete(hs, k1);
-  ok(hs_contains(hs, k1) == 0, "returns 0 if the record was deleted");
+  ok(hs_contains(hs, k1) == 0, "returns 0 if the entry was deleted");
 }
 
 void test_delete(void) {
@@ -90,18 +90,18 @@ void test_delete(void) {
   ok(hs_delete(hs, k1) == 0, "cannot delete the same key twice");
 
   ok(hs_contains(hs, "k1") == 0,
-     "returns 0 because the record has been deleted");
+     "returns 0 because the entry has been deleted");
   ok(hs_contains(hs, "k2") == 0,
-     "returns 0 because the record has been deleted");
+     "returns 0 because the entry has been deleted");
   ok(hs_contains(hs, "k3") == 0,
-     "returns 0 because the record has been deleted");
+     "returns 0 because the entry has been deleted");
 }
 
 void test_capacity(void) {
   int initial_cap = 23;
   hash_set *hs = hs_init(initial_cap);
 
-  for (int i = 0; i < initial_cap; i++) {
+  for (unsigned int i = 0; i < initial_cap; i++) {
     double digits = i == 0 ? 1 : floor(log10(abs(i))) + 1;
 
     char buf[(int)digits + 2];
@@ -125,7 +125,7 @@ void test_contains_miss(void) {
   ok(hs_contains(hs, "key2") == 0, "does not contain the key");
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   plan(31);
 
   test_initialization();
