@@ -6,8 +6,6 @@
 #include "prime.h"
 #include "strdup/strdup.h"
 
-static const int HS_DEFAULT_CAPACITY = 50;
-
 /**
  * Resize the hash set. This implementation has a set capacity;
  * hash collisions rise beyond the capacity and `hs_insert` will fail.

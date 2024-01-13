@@ -7,8 +7,6 @@
 #include "prime.h"
 #include "strdup/strdup.h"
 
-const int HT_DEFAULT_CAPACITY = 50;
-
 static ht_record HT_RECORD_SENTINEL = {NULL, NULL};
 
 static void __ht_insert(hash_table *ht, const char *key, void *value,

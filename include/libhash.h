@@ -1,6 +1,9 @@
 #ifndef LIBHASH_H
 #define LIBHASH_H
 
+#define HT_DEFAULT_CAPACITY 50
+#define HS_DEFAULT_CAPACITY 50
+
 /**
  * A hash table record i.e. key / value pair
  */
