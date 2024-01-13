@@ -69,11 +69,10 @@ void ht_insert_ptr(hash_table *ht, const char *key, void *value);
  *
  * @param ht
  * @param key
- * @return char*
  */
 ht_record *ht_search(hash_table *ht, const char *key);
 
-char *ht_get(hash_table *ht, const char *key);
+void *ht_get(hash_table *ht, const char *key);
 
 /**
  * Delete a hash table and deallocate its memory

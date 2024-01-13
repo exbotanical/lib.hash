@@ -7,9 +7,9 @@
 #include "prime.h"
 #include "strdup/strdup.h"
 
-static ht_record HT_RECORD_SENTINEL = {NULL, NULL};
-
 const int HT_DEFAULT_CAPACITY = 50;
+
+static ht_record HT_RECORD_SENTINEL = {NULL, NULL};
 
 static void __ht_insert(hash_table *ht, const char *key, void *value,
                         bool free_value);
@@ -233,7 +233,7 @@ ht_record *ht_search(hash_table *ht, const char *key) {
   return NULL;
 }
 
-char *ht_get(hash_table *ht, const char *key) {
+void *ht_get(hash_table *ht, const char *key) {
   ht_record *r = ht_search(ht, key);
 
   return r ? r->value : NULL;
