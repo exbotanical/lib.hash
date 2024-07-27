@@ -5,6 +5,14 @@
 #define HS_DEFAULT_CAPACITY 50
 
 /**
+ * A free function that will be invoked a hashmap value any time it is removed.
+ *
+ * @param value
+ * @return typedef
+ */
+typedef void free_fn(void *value);
+
+/**
  * A hash table entry i.e. key / value pair
  */
 typedef struct {
@@ -36,15 +44,23 @@ typedef struct {
    * The hash table's entries
    */
   ht_entry **entries;
+
+  /**
+   * Either a free_fn* or NULL; if set, this function pointer will be invoked
+   * with hashmap values that are being removed so the caller may free them
+   * however they want.
+   */
+  free_fn *free_value;
 } hash_table;
 
 /**
  * Initialize a new hash table with a size of `max_size`
  *
  * @param max_size The hash table capacity
+ * @param free_value See free_fn
  * @return hash_table*
  */
-hash_table *ht_init(int base_capacity);
+hash_table *ht_init(int base_capacity, free_fn *free_value);
 
 /**
  * Insert a key, value pair into the given hash table.
@@ -53,18 +69,6 @@ hash_table *ht_init(int base_capacity);
  * @param key
  */
 void ht_insert(hash_table *ht, const char *key, void *value);
-
-/**
- * Insert a key, value pair into the given hash table.
- *
- * This version of ht_insert will also free the entry value.
- * Thus, the entry value must be allocated on the heap.
- *
- * @param ht
- * @param key
- * @param value
- */
-void ht_insert_ptr(hash_table *ht, const char *key, void *value);
 
 /**
  * Search for the entry corresponding to the given key
@@ -91,16 +95,6 @@ void *ht_get(hash_table *ht, const char *key);
 void ht_delete_table(hash_table *ht);
 
 /**
- * Delete a hash table and deallocate its memory
- *
- * This version of ht_delete_table will also free the entry value.
- * Thus, the entry value must be allocated on the heap.
- *
- * @param ht Hash table to delete
- */
-void ht_delete_table_ptr(hash_table *ht);
-
-/**
  * Delete a entry for the given key `key`. Because entries
  * may be part of a collision chain, and removing them completely
  * could cause infinite lookup attempts, we replace the deleted entry
@@ -113,23 +107,6 @@ void ht_delete_table_ptr(hash_table *ht);
  * to the given key could be found
  */
 int ht_delete(hash_table *ht, const char *key);
-
-/**
- * Delete a entry for the given key `key`. Because entries
- * may be part of a collision chain, and removing them completely
- * could cause infinite lookup attempts, we replace the deleted entry
- * with a NULL sentinel entry.
- *
- * This version of ht_delete will also free the entry value.
- * Thus, the entry value must be allocated on the heap.
- *
- * @param ht
- * @param key
- *
- * @return 1 if a entry was deleted, 0 if no entry corresponding
- * to the given key could be found
- */
-int ht_delete_ptr(hash_table *ht, const char *key);
 
 typedef struct {
   /**

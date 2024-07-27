@@ -9,10 +9,9 @@
 
 static ht_entry HT_SENTINEL_ENTRY = {NULL, NULL};
 
-static void __ht_insert(hash_table *ht, const char *key, void *value,
-                        bool free_value);
-static int __ht_delete(hash_table *ht, const char *key, bool free_value);
-static void __ht_delete_table(hash_table *ht, bool free_value);
+static void __ht_insert(hash_table *ht, const char *key, void *value);
+static int __ht_delete(hash_table *ht, const char *key);
+static void __ht_delete_table(hash_table *ht);
 
 /**
  * Resize the hash table. This implementation has a set capacity;
@@ -26,19 +25,18 @@ static void __ht_delete_table(hash_table *ht, bool free_value);
  * @param base_capacity
  * @return int
  */
-static void ht_resize(hash_table *ht, const int base_capacity,
-                      bool free_value) {
+static void ht_resize(hash_table *ht, const int base_capacity) {
   if (base_capacity < 0) {
     return;
   }
 
-  hash_table *new_ht = ht_init(base_capacity);
+  hash_table *new_ht = ht_init(base_capacity, ht->free_value);
 
   for (unsigned int i = 0; i < ht->capacity; i++) {
     ht_entry *r = ht->entries[i];
 
     if (r != NULL && r != &HT_SENTINEL_ENTRY) {
-      __ht_insert(new_ht, r->key, r->value, free_value);
+      __ht_insert(new_ht, r->key, r->value);
     }
   }
 
@@ -63,10 +61,10 @@ static void ht_resize(hash_table *ht, const int base_capacity,
  *
  * @param ht
  */
-static void ht_resize_up(hash_table *ht, bool free_value) {
+static void ht_resize_up(hash_table *ht) {
   const int new_capacity = ht->base_capacity * 2;
 
-  ht_resize(ht, new_capacity, free_value);
+  ht_resize(ht, new_capacity);
 }
 
 /**
@@ -75,10 +73,10 @@ static void ht_resize_up(hash_table *ht, bool free_value) {
  *
  * @param ht
  */
-static void ht_resize_down(hash_table *ht, bool free_value) {
+static void ht_resize_down(hash_table *ht) {
   const int new_capacity = ht->base_capacity / 2;
 
-  ht_resize(ht, new_capacity, free_value);
+  ht_resize(ht, new_capacity);
 }
 
 /**
@@ -101,24 +99,23 @@ static ht_entry *ht_entry_init(const char *k, void *v) {
  *
  * @param r entry to delete
  */
-static void ht_delete_entry(ht_entry *r, bool free_value) {
+static void ht_delete_entry(ht_entry *r, free_fn *maybe_free_value) {
   free(r->key);
-  if (free_value) {
-    free(r->value);
+  if (maybe_free_value && r->value) {
+    maybe_free_value(r->value);
     r->value = NULL;
   }
   free(r);
 }
 
-static void __ht_insert(hash_table *ht, const char *key, void *value,
-                        bool free_value) {
+static void __ht_insert(hash_table *ht, const char *key, void *value) {
   if (ht == NULL) {
     return;
   }
 
   const int load = ht->count * 100 / ht->capacity;
   if (load > 70) {
-    ht_resize_up(ht, free_value);
+    ht_resize_up(ht);
   }
 
   ht_entry *new_entry = ht_entry_init(key, value);
@@ -132,7 +129,7 @@ static void __ht_insert(hash_table *ht, const char *key, void *value,
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
     // update existing key/value
     if (strcmp(current_entry->key, key) == 0) {
-      ht_delete_entry(current_entry, free_value);
+      ht_delete_entry(current_entry, ht->free_value);
       ht->entries[idx] = new_entry;
 
       return;
@@ -148,11 +145,11 @@ static void __ht_insert(hash_table *ht, const char *key, void *value,
   ht->count++;
 }
 
-static int __ht_delete(hash_table *ht, const char *key, bool free_value) {
+static int __ht_delete(hash_table *ht, const char *key) {
   const int load = ht->count * 100 / ht->capacity;
 
   if (load < 10) {
-    ht_resize_down(ht, free_value);
+    ht_resize_down(ht);
   }
 
   int i = 0;
@@ -162,7 +159,7 @@ static int __ht_delete(hash_table *ht, const char *key, bool free_value) {
 
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
     if (strcmp(current_entry->key, key) == 0) {
-      ht_delete_entry(current_entry, free_value);
+      ht_delete_entry(current_entry, ht->free_value);
       ht->entries[idx] = &HT_SENTINEL_ENTRY;
 
       ht->count--;
@@ -177,12 +174,12 @@ static int __ht_delete(hash_table *ht, const char *key, bool free_value) {
   return 0;
 }
 
-static void __ht_delete_table(hash_table *ht, bool free_value) {
+static void __ht_delete_table(hash_table *ht) {
   for (unsigned int i = 0; i < ht->capacity; i++) {
     ht_entry *r = ht->entries[i];
 
     if (r != NULL && r != &HT_SENTINEL_ENTRY) {
-      ht_delete_entry(r, free_value);
+      ht_delete_entry(r, ht->free_value);
     }
   }
 
@@ -190,7 +187,7 @@ static void __ht_delete_table(hash_table *ht, bool free_value) {
   free(ht);
 }
 
-hash_table *ht_init(int base_capacity) {
+hash_table *ht_init(int base_capacity, free_fn *free_value) {
   if (!base_capacity) {
     base_capacity = HT_DEFAULT_CAPACITY;
   }
@@ -201,16 +198,13 @@ hash_table *ht_init(int base_capacity) {
   ht->capacity = next_prime(ht->base_capacity);
   ht->count = 0;
   ht->entries = calloc((size_t)ht->capacity, sizeof(ht_entry *));
+  ht->free_value = free_value;
 
   return ht;
 }
 
 void ht_insert(hash_table *ht, const char *key, void *value) {
-  __ht_insert(ht, key, value, false);
-}
-
-void ht_insert_ptr(hash_table *ht, const char *key, void *value) {
-  __ht_insert(ht, key, value, true);
+  __ht_insert(ht, key, value);
 }
 
 ht_entry *ht_search(hash_table *ht, const char *key) {
@@ -237,14 +231,6 @@ void *ht_get(hash_table *ht, const char *key) {
   return r ? r->value : NULL;
 }
 
-void ht_delete_table(hash_table *ht) { __ht_delete_table(ht, false); }
+void ht_delete_table(hash_table *ht) { __ht_delete_table(ht); }
 
-void ht_delete_table_ptr(hash_table *ht) { __ht_delete_table(ht, true); }
-
-int ht_delete(hash_table *ht, const char *key) {
-  return __ht_delete(ht, key, false);
-}
-
-int ht_delete_ptr(hash_table *ht, const char *key) {
-  return __ht_delete(ht, key, true);
-}
+int ht_delete(hash_table *ht, const char *key) { return __ht_delete(ht, key); }

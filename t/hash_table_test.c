@@ -12,7 +12,7 @@ void test_initialization(void) {
   char *k = "key";
   char *v = "value";
 
-  hash_table *ht = ht_init(capacity);
+  hash_table *ht = ht_init(capacity, NULL);
   ht_entry *r = ht_entry_init(k, v);
 
   ok(ht != NULL, "hash table is not NULL");
@@ -31,7 +31,7 @@ void test_initialization(void) {
 }
 
 void test_insert(void) {
-  hash_table *ht = ht_init(10);
+  hash_table *ht = ht_init(10, NULL);
 
   ht_insert(ht, "k1", "v1");
 
@@ -58,7 +58,7 @@ void test_insert(void) {
 }
 
 void test_search(void) {
-  hash_table *ht = ht_init(10);
+  hash_table *ht = ht_init(10, NULL);
 
   ht_insert(ht, "k1", "v1");
   ht_insert(ht, "k2", "v2");
@@ -76,7 +76,7 @@ void test_search(void) {
 }
 
 void test_delete(void) {
-  hash_table *ht = ht_init(10);
+  hash_table *ht = ht_init(10, NULL);
 
   ht_insert(ht, "k1", "v1");
   ht_insert(ht, "k2", "v2");
@@ -97,7 +97,7 @@ void test_delete(void) {
 
 void test_capacity(void) {
   int initial_cap = 23;
-  hash_table *ht = ht_init(initial_cap);
+  hash_table *ht = ht_init(initial_cap, NULL);
 
   for (int i = 0; i < initial_cap; i++) {
     double digits = i == 0 ? 1 : floor(log10(abs(i))) + 1;
@@ -114,27 +114,28 @@ void test_capacity(void) {
   ok(ht->count == initial_cap, "maintains the count");
 }
 
-void test_delete_ptr(void) {
-  hash_table *ht = ht_init(10);
+void *free(void *value) { free((char *)value); }
+void test_delete_with_free(void) {
+  hash_table *ht = ht_init(10, free);
 
   char *v1 = strdup("v1");
   char *v2 = strdup("v2");
   char *v3 = strdup("v3");
 
-  ht_insert_ptr(ht, "k1", v1);
-  ht_insert_ptr(ht, "k2", v2);
-  ht_insert_ptr(ht, "k3", v3);
+  ht_insert(ht, "k1", v1);
+  ht_insert(ht, "k2", v2);
+  ht_insert(ht, "k3", v3);
 
-  ok(ht_delete_ptr(ht, "k1") == 1,
-     "returns 1 when entry deletion was successful");
-  ok(ht_delete_ptr(ht, "k2") == 1,
-     "returns 1 when entry deletion was successful");
-  ok(ht_delete_ptr(ht, "k3") == 1,
-     "returns 1 when entry deletion was successful");
+  ok(ht_delete(ht, "k1") == 1, "returns 1 when entry deletion was successful");
+  ok(v1 == NULL, "passes the value to the provided free function");
+  ok(ht_delete(ht, "k2") == 1, "returns 1 when entry deletion was successful");
+  ok(v2 == NULL, "passes the value to the provided free function");
+  ok(ht_delete(ht, "k3") == 1, "returns 1 when entry deletion was successful");
+  ok(v3 == NULL, "passes the value to the provided free function");
 
-  ok(ht_delete_ptr(ht, "k4") == 0,
+  ok(ht_delete(ht, "k4") == 0,
      "returns 0 when entry deletion was unsuccessful");
-  ok(ht_delete_ptr(ht, "k1") == 0, "cannot delete the same entry twice");
+  ok(ht_delete(ht, "k1") == 0, "cannot delete the same entry twice");
 
   is(ht_get(ht, "k1"), NULL, "returns NULL because the entry has been deleted");
   is(ht_get(ht, "k2"), NULL, "returns NULL because the entry has been deleted");
@@ -154,7 +155,7 @@ int main() {
   test_search();
   test_delete();
   test_capacity();
-  test_delete_ptr();
+  test_delete_with_free();
 
   done_testing();
 }
