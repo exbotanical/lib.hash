@@ -19,6 +19,6 @@
     "strdup": "*"
   },
   "development": {
-    "thlorenz/tap.c": "*"
+    "exbotanical/libtap": "*"
   }
 }

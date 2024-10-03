@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "libhash.h"
+#include "libtap/libtap.h"
 #include "prime.h"
-#include "tap.c/tap.h"
 
 void test_initialization(void) {
   int capacity = 20;
@@ -18,7 +18,7 @@ void test_initialization(void) {
 
   ok(hs->count == 0, "initial count is 0");
 
-  lives_ok({ hs_delete_set(hs); }, "frees the hash set heap memory");
+  lives({ hs_delete_set(hs); }, "frees the hash set heap memory");
 }
 
 void test_insert(void) {

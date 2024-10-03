@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "tap.c/tap.h"
+#include "libtap/libtap.h"
 
 // include the entire source so we may test static functions
 // without conditional compilation
@@ -22,12 +22,12 @@ void test_initialization(void) {
 
   ok(ht->count == 0, "initial count is 0");
 
-  lives_ok({ ht_delete_table(ht); }, "frees the hash table heap memory");
+  lives({ ht_delete_table(ht); }, "frees the hash table heap memory");
 
   is(r->key, k, "key match");
   is(r->value, v, "value match");
 
-  lives_ok({ ht_delete_entry(r, false); }, "frees the entry heap memory");
+  lives({ ht_delete_entry(r, false); }, "frees the entry heap memory");
 }
 
 void test_insert(void) {
