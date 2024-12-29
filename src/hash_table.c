@@ -25,16 +25,15 @@ static void __ht_delete_table(hash_table *ht);
  * @param base_capacity
  * @return int
  */
-static void ht_resize(hash_table *ht, const int base_capacity) {
-  if (base_capacity < 0) {
-    return;
+static void ht_resize(hash_table *ht, int base_capacity) {
+  if (base_capacity < HT_DEFAULT_CAPACITY) {
+    base_capacity = HT_DEFAULT_CAPACITY;
   }
 
   hash_table *new_ht = ht_init(base_capacity, ht->free_value);
 
   for (unsigned int i = 0; i < ht->capacity; i++) {
     ht_entry *r = ht->entries[i];
-
     if (r != NULL && r != &HT_SENTINEL_ENTRY) {
       __ht_insert(new_ht, r->key, r->value);
     }
@@ -44,15 +43,17 @@ static void ht_resize(hash_table *ht, const int base_capacity) {
   ht->count = new_ht->count;
 
   const int tmp_capacity = ht->capacity;
-
   ht->capacity = new_ht->capacity;
   new_ht->capacity = tmp_capacity;
 
   ht_entry **tmp_entries = ht->entries;
   ht->entries = new_ht->entries;
   new_ht->entries = tmp_entries;
+  ht->occupied_buckets = new_ht->occupied_buckets;
 
-  ht_delete_table(new_ht);
+  // Cannot free values - we may still be using them.
+  free(new_ht->entries);
+  free(new_ht);
 }
 
 /**
@@ -121,34 +122,34 @@ static void __ht_insert(hash_table *ht, const char *key, void *value) {
   ht_entry *new_entry = ht_entry_init(key, value);
 
   int idx = h_resolve_hash(new_entry->key, ht->capacity, 0);
-
   ht_entry *current_entry = ht->entries[idx];
+  // If there was a hash collision, we need to perform double hashing and
+  // partial linear probing by incrementing this index and hashing it until we
+  // find a bucket.
   int i = 1;
-
-  // i.e. if there was a collision
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
-    // update existing key/value
+    // If the keys match, then we've inserted this key before. Use this bucket.
     if (strcmp(current_entry->key, key) == 0) {
-      ht_delete_entry(current_entry, ht->free_value);
+      ht_delete_entry(current_entry, NULL);
       ht->entries[idx] = new_entry;
-
       return;
     }
 
-    // TODO verify i is 1..
     idx = h_resolve_hash(new_entry->key, ht->capacity, i);
     current_entry = ht->entries[idx];
     i++;
   }
 
   ht->entries[idx] = new_entry;
+  list_prepend(&ht->occupied_buckets, idx);
   ht->count++;
 }
 
 static int __ht_delete(hash_table *ht, const char *key) {
   const int load = ht->count * 100 / ht->capacity;
 
-  if (load < 10) {
+  // TODO: const
+  if (load < 30) {
     ht_resize_down(ht);
   }
 
@@ -156,12 +157,11 @@ static int __ht_delete(hash_table *ht, const char *key) {
   int idx = h_resolve_hash(key, ht->capacity, i);
 
   ht_entry *current_entry = ht->entries[idx];
-
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
     if (strcmp(current_entry->key, key) == 0) {
       ht_delete_entry(current_entry, ht->free_value);
       ht->entries[idx] = &HT_SENTINEL_ENTRY;
-
+      list_remove(&ht->occupied_buckets, idx);
       ht->count--;
 
       return 1;
@@ -199,7 +199,7 @@ hash_table *ht_init(int base_capacity, free_fn *free_value) {
   ht->count = 0;
   ht->entries = calloc((size_t)ht->capacity, sizeof(ht_entry *));
   ht->free_value = free_value;
-
+  ht->occupied_buckets = list_node_create_head();
   return ht;
 }
 

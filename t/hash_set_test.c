@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 #include "libhash.h"
-#include "libtap/libtap.h"
 #include "prime.h"
+#include "tests.h"
 
-void test_initialization(void) {
+static void test_initialization(void) {
   int capacity = 20;
   char *k = "key";
 
@@ -21,7 +21,7 @@ void test_initialization(void) {
   lives({ hs_delete_set(hs); }, "frees the hash set heap memory");
 }
 
-void test_insert(void) {
+static void test_insert(void) {
   hash_set *hs = hs_init(10);
   const char *k1 = "k1";
   const char *k2 = "k2";
@@ -48,7 +48,7 @@ void test_insert(void) {
   ok(hs_contains(hs, k1), "inserts the key clean after having been deleted");
 }
 
-void test_contains(void) {
+static void test_contains(void) {
   hash_set *hs = hs_init(10);
   const char *k1 = "k1";
   const char *k2 = "k2";
@@ -69,7 +69,7 @@ void test_contains(void) {
   ok(hs_contains(hs, k1) == 0, "returns 0 if the entry was deleted");
 }
 
-void test_delete(void) {
+static void test_delete(void) {
   const char *k1 = "k1";
   const char *k2 = "k2";
   const char *k3 = "k3";
@@ -97,7 +97,7 @@ void test_delete(void) {
      "returns 0 because the entry has been deleted");
 }
 
-void test_capacity(void) {
+static void test_capacity(void) {
   int initial_cap = 23;
   hash_set *hs = hs_init(initial_cap);
 
@@ -116,7 +116,7 @@ void test_capacity(void) {
   ok(hs->count == initial_cap, "maintains the count");
 }
 
-void test_contains_miss(void) {
+static void test_contains_miss(void) {
   hash_set *hs = hs_init(2);
 
   hs_insert(hs, "Content-Type");
@@ -125,15 +125,11 @@ void test_contains_miss(void) {
   ok(hs_contains(hs, "key2") == 0, "does not contain the key");
 }
 
-int main() {
-  plan(31);
-
+void run_hash_set_tests(void) {
   test_initialization();
   test_insert();
   test_contains();
   test_delete();
   test_capacity();
   test_contains_miss();
-
-  done_testing();
 }

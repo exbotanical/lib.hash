@@ -46,7 +46,9 @@ static int h_hash(const char *key, const int prime, const int capacity) {
  */
 int h_resolve_hash(const char *key, const int capacity, const int attempt) {
   const int hash_a = h_hash(key, H_PRIME_1, capacity);
-  const int hash_b = h_hash(key, H_PRIME_2, capacity);
+  int hash_b = h_hash(key, H_PRIME_2, capacity);
 
-  return (hash_a + attempt * (hash_b == 0 ? 1 : hash_b)) % capacity;
+  // Prevent infinite cycling when hash_b == num buckets.
+  if (hash_b % capacity == 0) hash_b = 1;
+  return (hash_a + (attempt * hash_b)) % capacity;
 }

@@ -1,12 +1,12 @@
 #include "prime.h"
 
-#include "libtap/libtap.h"
+#include "tests.h"
 
 static const int prime_map[] = {2,  3,  5,  7,  11, 13, 17, 19, 23,
                                 29, 31, 37, 41, 43, 47, 53, 59, 61,
                                 67, 71, 73, 79, 83, 89, 97};
 
-void test_is_prime(void) {
+static void test_is_prime(void) {
   for (unsigned int i = 0; i < sizeof(prime_map) / sizeof(int); i++) {
     int prime = prime_map[i];
 
@@ -14,7 +14,7 @@ void test_is_prime(void) {
   }
 }
 
-void test_next_prime(void) {
+static void test_next_prime(void) {
   for (unsigned int i = 2; i < sizeof(prime_map) / sizeof(int); i++) {
     int prime = prime_map[i];
 
@@ -22,13 +22,7 @@ void test_next_prime(void) {
   }
 }
 
-int main() {
-  plan(48);
-
+void run_prime_tests(void) {
   test_is_prime();
   test_next_prime();
-
-  done_testing();
-
-  return 0;
 }
