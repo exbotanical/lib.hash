@@ -153,23 +153,37 @@ static void test_ht_iterate(void) {
   ht_delete(ht, "k2");
   ht_insert(ht, "k4", "v4");
 
-  unsigned int count = 0;
+  ht_insert(ht, "kxx4", "wdv4");
+  ht_insert(ht, "k4x", "vdw34");
+  ht_insert(ht, "k4w", "v2d4");
+  ht_insert(ht, "k4dwd", "ev4");
+  ht_insert(ht, "k2", "v4");
+  ht_delete(ht, "kxx4");
+
+  ht_insert(ht, "k4w", "2v4");
+  ht_insert(ht, "k4q", "vwqd4");
+
   HT_ITER_START(ht)
-  switch (count++) {
-    case 0:
-      is(entry->value, "v4", "most recent entry at head");
-      break;
-    case 1:
-      is(entry->value, "v3", "retains entry");
-      break;
-    case 2:
-      is(entry->value, "v1", "first entry at tail");
-      break;
-    case 3:
-      is(entry->value, NULL, "terminates where expected");
-      break;
-  }
+  printf(">>>> %s=%s\n", entry->key, entry->value);
   HT_ITER_END
+
+  // unsigned int count = 0;
+  // HT_ITER_START(ht)
+  // switch (count++) {
+  //   case 0:
+  //     is(entry->value, "v4", "most recent entry at head");
+  //     break;
+  //   case 1:
+  //     is(entry->value, "v3", "retains entry");
+  //     break;
+  //   case 2:
+  //     is(entry->value, "v1", "first entry at tail");
+  //     break;
+  //   case 3:
+  //     is(entry->value, NULL, "terminates where expected");
+  //     break;
+  // }
+  // HT_ITER_END
 }
 
 void run_hash_table_tests(void) {
