@@ -30,17 +30,17 @@ typedef struct {
    * Max number of entries which may be stored in the hash table. Adjustable.
    * Calculated as the first prime subsequent to the base capacity.
    */
-  int capacity;
+  unsigned int capacity;
 
   /**
    * Base capacity (used to calculate load for resizing)
    */
-  int base_capacity;
+  unsigned int base_capacity;
 
   /**
    * Number of non-NULL entries in the hash table
    */
-  int count;
+  unsigned int count;
 
   /**
    * The hash table's entries
@@ -126,17 +126,17 @@ typedef struct {
    * Max number of keys which may be stored in the hash set. Adjustable.
    * Calculated as the first prime subsequent to the base capacity.
    */
-  int capacity;
+  unsigned int capacity;
 
   /**
    * Base capacity (used to calculate load for resizing)
    */
-  int base_capacity;
+  unsigned int base_capacity;
 
   /**
    * Number of non-NULL keys in the hash set
    */
-  int count;
+  unsigned int count;
 
   /**
    * The hash set's keys

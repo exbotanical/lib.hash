@@ -13,9 +13,10 @@ static const int H_PRIME_2 = 163;
  * @param key
  * @param prime
  * @param capacity
- * @return int
+ * @return unsigned int
  */
-static int h_hash(const char *key, const int prime, const int capacity) {
+static unsigned int h_hash(const char *key, const int prime,
+                           const int capacity) {
   long hash = 0;
 
   const size_t len_s = strlen(key);
@@ -26,7 +27,7 @@ static int h_hash(const char *key, const int prime, const int capacity) {
     hash = hash % capacity;
   }
 
-  return (int)hash;
+  return (unsigned int)hash;
 }
 
 /**
@@ -42,11 +43,12 @@ static int h_hash(const char *key, const int prime, const int capacity) {
  * @param key
  * @param capacity
  * @param attempt Number of attempts made to generate a non-colliding hash.
- * @return int
+ * @return unsigned int
  */
-int h_resolve_hash(const char *key, const int capacity, const int attempt) {
-  const int hash_a = h_hash(key, H_PRIME_1, capacity);
-  int hash_b = h_hash(key, H_PRIME_2, capacity);
+unsigned int h_compute_hash(const char *key, const int capacity,
+                            const int attempt) {
+  const unsigned int hash_a = h_hash(key, H_PRIME_1, capacity);
+  unsigned int hash_b = h_hash(key, H_PRIME_2, capacity);
 
   // Prevent infinite cycling when hash_b == num buckets.
   if (hash_b % capacity == 0) hash_b = 1;

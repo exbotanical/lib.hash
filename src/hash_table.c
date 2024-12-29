@@ -69,8 +69,7 @@ static void ht_resize(hash_table *ht, int base_capacity) {
  * @param ht
  */
 static void ht_resize_up(hash_table *ht) {
-  const int new_capacity = ht->base_capacity * 2;
-
+  const unsigned int new_capacity = ht->base_capacity * 2;
   ht_resize(ht, new_capacity);
 }
 
@@ -81,8 +80,7 @@ static void ht_resize_up(hash_table *ht) {
  * @param ht
  */
 static void ht_resize_down(hash_table *ht) {
-  const int new_capacity = ht->base_capacity / 2;
-
+  const unsigned int new_capacity = ht->base_capacity / 2;
   ht_resize(ht, new_capacity);
 }
 
@@ -120,19 +118,19 @@ static void __ht_insert(hash_table *ht, const char *key, void *value) {
     return;
   }
 
-  const int load = ht->count * 100 / ht->capacity;
+  const unsigned int load = ht->count * 100 / ht->capacity;
   if (load > 70) {
     ht_resize_up(ht);
   }
 
   ht_entry *new_entry = ht_entry_init(key, value);
 
-  int idx = h_resolve_hash(new_entry->key, ht->capacity, 0);
+  unsigned int idx = h_compute_hash(new_entry->key, ht->capacity, 0);
   ht_entry *current_entry = ht->entries[idx];
   // If there was a hash collision, we need to perform double hashing and
   // partial linear probing by incrementing this index and hashing it until we
   // find a bucket.
-  int i = 1;
+  unsigned int i = 1;
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
     // If the keys match, then we've inserted this key before. Use this bucket.
     if (strcmp(current_entry->key, key) == 0) {
@@ -141,7 +139,7 @@ static void __ht_insert(hash_table *ht, const char *key, void *value) {
       return;
     }
 
-    idx = h_resolve_hash(new_entry->key, ht->capacity, i);
+    idx = h_compute_hash(new_entry->key, ht->capacity, i);
     current_entry = ht->entries[idx];
     i++;
   }
@@ -152,15 +150,15 @@ static void __ht_insert(hash_table *ht, const char *key, void *value) {
 }
 
 static int __ht_delete(hash_table *ht, const char *key) {
-  const int load = ht->count * 100 / ht->capacity;
+  const unsigned int load = ht->count * 100 / ht->capacity;
 
   // TODO: const
   if (load < 30) {
     ht_resize_down(ht);
   }
 
-  int i = 0;
-  int idx = h_resolve_hash(key, ht->capacity, i);
+  unsigned int i = 0;
+  unsigned int idx = h_compute_hash(key, ht->capacity, i);
 
   ht_entry *current_entry = ht->entries[idx];
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
@@ -173,7 +171,7 @@ static int __ht_delete(hash_table *ht, const char *key) {
       return 1;
     }
 
-    idx = h_resolve_hash(key, ht->capacity, ++i);
+    idx = h_compute_hash(key, ht->capacity, ++i);
     current_entry = ht->entries[idx];
   }
 
@@ -214,16 +212,16 @@ void ht_insert(hash_table *ht, const char *key, void *value) {
 }
 
 ht_entry *ht_search(hash_table *ht, const char *key) {
-  int idx = h_resolve_hash(key, ht->capacity, 0);
+  unsigned int idx = h_compute_hash(key, ht->capacity, 0);
   ht_entry *current_entry = ht->entries[idx];
-  int i = 1;
 
+  unsigned int i = 1;
   while (current_entry != NULL && current_entry != &HT_SENTINEL_ENTRY) {
     if (strcmp(current_entry->key, key) == 0) {
       return current_entry;
     }
 
-    idx = h_resolve_hash(key, ht->capacity, i);
+    idx = h_compute_hash(key, ht->capacity, i);
     current_entry = ht->entries[idx];
     i++;
   }
@@ -233,7 +231,6 @@ ht_entry *ht_search(hash_table *ht, const char *key) {
 
 void *ht_get(hash_table *ht, const char *key) {
   ht_entry *r = ht_search(ht, key);
-
   return r ? r->value : NULL;
 }
 

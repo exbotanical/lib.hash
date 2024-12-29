@@ -65,7 +65,7 @@ unit_test: $(STATIC_TARGET)
 	$(MAKE) clean
 
 unit_test_dev:
-	ls $(SRCDIR)/*.{h,c} $(TESTDIR)/*.{h,c} | entr -s 'make -s unit_test'
+	ls $(INCDIR)/*.h $(SRCDIR)/*.{h,c} $(TESTDIR)/*.{h,c} | entr -s 'make -s unit_test'
 
 valgrind: $(STATIC_TARGET)
 	$(CC) $(CFLAGS) $(TESTS) $(TEST_DEPS) $< $(LIBS) -o $(TEST_TARGET)
