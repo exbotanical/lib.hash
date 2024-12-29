@@ -40,17 +40,23 @@ static void ht_resize(hash_table *ht, int base_capacity) {
   }
 
   ht->base_capacity = new_ht->base_capacity;
-  ht->count = new_ht->count;
-
-  const int tmp_capacity = ht->capacity;
   ht->capacity = new_ht->capacity;
+  ht->count = new_ht->count;
 
   // Cannot free values - we may still be using them.
   ht_entry **tmp_entries = ht->entries;
   ht->entries = new_ht->entries;
   free(tmp_entries);
 
-  list_free(ht->occupied_buckets);
+  // TODO: Figure out why list_free doesnt work but this does
+  node_t *head = ht->occupied_buckets;
+  node_t *tmp;
+  while (head != &LIST_SENTINEL_NODE) {
+    tmp = head;
+    head = head->next;
+    free(tmp);
+  }
+
   ht->occupied_buckets = new_ht->occupied_buckets;
 
   free(new_ht);
@@ -183,7 +189,6 @@ static void __ht_delete_table(hash_table *ht) {
     }
   }
 
-  // list_free(ht->occupied_buckets);
   free(ht->entries);
   free(ht);
 }
