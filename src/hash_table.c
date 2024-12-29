@@ -44,15 +44,15 @@ static void ht_resize(hash_table *ht, int base_capacity) {
 
   const int tmp_capacity = ht->capacity;
   ht->capacity = new_ht->capacity;
-  new_ht->capacity = tmp_capacity;
-
-  ht_entry **tmp_entries = ht->entries;
-  ht->entries = new_ht->entries;
-  new_ht->entries = tmp_entries;
-  ht->occupied_buckets = new_ht->occupied_buckets;
 
   // Cannot free values - we may still be using them.
-  free(new_ht->entries);
+  ht_entry **tmp_entries = ht->entries;
+  ht->entries = new_ht->entries;
+  free(tmp_entries);
+
+  list_free(ht->occupied_buckets);
+  ht->occupied_buckets = new_ht->occupied_buckets;
+
   free(new_ht);
 }
 
@@ -183,6 +183,7 @@ static void __ht_delete_table(hash_table *ht) {
     }
   }
 
+  // list_free(ht->occupied_buckets);
   free(ht->entries);
   free(ht);
 }

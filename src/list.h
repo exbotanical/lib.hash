@@ -50,9 +50,9 @@ static void list_remove(node_t **head, int value) {
 }
 
 // TODO: Use and test
-static void free_list(node_t *head) {
+static void list_free(node_t *head) {
   node_t *tmp;
-  while (head) {
+  while (head != &LIST_SENTINEL_NODE) {
     tmp = head;
     head = head->next;
     free(tmp);
