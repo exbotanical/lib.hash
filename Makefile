@@ -25,20 +25,24 @@ OBJ             := $(addprefix obj/, $(notdir $(SRC:.c=.o)) $(notdir $(DEPS:.c=.
 
 INCLUDES        := -I$(INCDIR) -I$(DEPSDIR) -I$(SRCDIR)
 LIBS            := -lm
+STRICT          := -Wall -Werror -Wextra -Wno-missing-field-initializers \
+ -Wmissing-prototypes -Wstrict-prototypes -Wold-style-definition \
+ -Wno-unused-parameter -Wno-unused-function -Wno-unused-value \
+ -pedantic
 CFLAGS          := -Wall -Wextra -pedantic -std=c17 $(INCLUDES)
 
 $(DYNAMIC_TARGET): CFLAGS += -shared
 $(DYNAMIC_TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(STRICT) $^ $(LIBS) -o $@
 
 $(STATIC_TARGET): $(OBJ)
 	$(AR) rcs $@ $^
 
 obj/%.o: $(SRCDIR)/%.c $(INCDIR)/$(LIBNAME).h | obj
-	$(CC) $< -c $(CFLAGS) -o $@
+	$(CC) $< -c $(CFLAGS) $(STRICT) -o $@
 
 obj/%.o: $(DEPSDIR)/*/%.c | obj
-	$(CC) $< -c $(CFLAGS) -o $@
+	$(CC) $< -c $(CFLAGS) $(STRICT) -o $@
 
 $(EXAMPLE_TARGET): $(STATIC_TARGET)
 	$(CC) $(CFLAGS) $(EXAMPLEDIR)/main.c $< $(LIBS) -o $@

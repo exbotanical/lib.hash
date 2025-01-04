@@ -2,7 +2,7 @@
 #include "tests.h"
 
 int main(void) {
-  plan(135);
+  plan(143);
 
   run_hash_set_tests();
   run_hash_table_tests();
