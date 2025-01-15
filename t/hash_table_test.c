@@ -18,17 +18,15 @@ static hash_table *init_test_ht(void) {
 }
 
 static void test_ht_initialization(void) {
-  int capacity = 20;
   char *k = "key";
   char *v = "value";
 
-  hash_table *ht = ht_init(capacity, NULL);
+  hash_table *ht = ht_init(20, NULL);
   ht_entry *r = ht_entry_init(k, v);
 
   ok(ht != NULL, "hash table is not NULL");
-  ok(ht->base_capacity == capacity, "given base capacity has been set");
-
-  ok(ht->capacity == next_prime(capacity), "given base capacity has been set");
+  ok(ht->base_capacity == HT_DEFAULT_CAPACITY,
+     "given base capacity has been adjusted to min %d", HT_DEFAULT_CAPACITY);
 
   ok(ht->count == 0, "initial count is 0");
 
@@ -153,37 +151,39 @@ static void test_ht_iterate(void) {
   ht_delete(ht, "k2");
   ht_insert(ht, "k4", "v4");
 
-  ht_insert(ht, "kxx4", "wdv4");
-  ht_insert(ht, "k4x", "vdw34");
-  ht_insert(ht, "k4w", "v2d4");
-  ht_insert(ht, "k4dwd", "ev4");
-  ht_insert(ht, "k2", "v4");
-  ht_delete(ht, "kxx4");
-
-  ht_insert(ht, "k4w", "2v4");
-  ht_insert(ht, "k4q", "vwqd4");
-
+  unsigned int count = 0;
   HT_ITER_START(ht)
-  printf(">>>> %s=%s\n", entry->key, entry->value);
+  switch (count++) {
+    case 0:
+      is(entry->key, "k4", "most recent entry at head");
+      break;
+    case 1:
+      is(entry->key, "k3", "retains entry");
+      break;
+    case 2:
+      is(entry->key, "k1", "first entry at tail");
+      break;
+    case 3:
+      is(entry->key, NULL, "terminates where expected");
+      break;
+  }
   HT_ITER_END
+}
 
-  // unsigned int count = 0;
-  // HT_ITER_START(ht)
-  // switch (count++) {
-  //   case 0:
-  //     is(entry->value, "v4", "most recent entry at head");
-  //     break;
-  //   case 1:
-  //     is(entry->value, "v3", "retains entry");
-  //     break;
-  //   case 2:
-  //     is(entry->value, "v1", "first entry at tail");
-  //     break;
-  //   case 3:
-  //     is(entry->value, NULL, "terminates where expected");
-  //     break;
-  // }
-  // HT_ITER_END
+static void test_hash_bugfix_1(void) {
+  const char *s1 = "^([a-zA-Z_-][a-zA-Z0-9_-]*)=\"([^\"]*)\"(?<! )$";
+  const char *s2 = "crontabs";
+  const char *s3 = "^w.*";
+
+  hash_table *ht = ht_init(1, NULL);
+
+  ht_insert(ht, s1, "x");
+  ht_insert(ht, s2, "y");
+  ht_insert(ht, s3, "z");
+
+  is("x", ht_get(ht, s1), "retrieves expected value");
+  is("y", ht_get(ht, s2), "retrieves expected value");
+  is("z", ht_get(ht, s3), "retrieves expected value");
 }
 
 void run_hash_table_tests(void) {
@@ -194,4 +194,5 @@ void run_hash_table_tests(void) {
   test_ht_capacity();
   test_ht_delete_with_free();
   test_ht_iterate();
+  test_hash_bugfix_1();
 }

@@ -3,7 +3,7 @@
 #include <math.h>    // for pow
 #include <string.h>  // for strlen
 
-static const int H_PRIME_1 = 151;
+static const int H_PRIME_1 = 157;
 static const int H_PRIME_2 = 163;
 
 /**
@@ -50,7 +50,10 @@ unsigned int h_compute_hash(const char *key, const int capacity,
   const unsigned int hash_a = h_hash(key, H_PRIME_1, capacity);
   unsigned int hash_b = h_hash(key, H_PRIME_2, capacity);
 
-  // Prevent infinite cycling when hash_b == num buckets.
-  if (hash_b % capacity == 0) hash_b = 1;
+  // Prevent infinite cycling when hash_b == num capacity.
+  if (hash_b % capacity == 0) {
+    hash_b = 1;
+  }
+
   return (hash_a + (attempt * hash_b)) % capacity;
 }
